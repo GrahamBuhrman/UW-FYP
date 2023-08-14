@@ -1,0 +1,16 @@
+# R build file
+# change to update tarball
+
+universe = vanilla
+log = interactive.log
+
+# Choose a version of R from the table above
+transfer_input_files = http://proxy.chtc.wisc.edu/SQUID/chtc/el8/R413.tar.gz, multibart_0.5.1.tar.gz
+
++IsBuildJob = true
+requirements = (OpSysMajorVer =?= 8)
+request_cpus = 1
+request_memory = 4GB
+request_disk = 2GB
+
+queue

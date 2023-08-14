@@ -1,0 +1,37 @@
+# sim-nonparametric.sub
+# Simulation of Cronbach alpha confidence intervals
+#
+# Specify the HTCondor Universe (vanilla is the default and is used
+#  for almost all jobs) and your desired name of the HTCondor log file,
+#  which is where HTCondor will describe what steps it takes to run 
+#  your job. Wherever you see $(Cluster), HTCondor will insert the 
+#  queue number assigned to this set of jobs at the time of submission.
+universe = vanilla
+log = /home/buhrman/nonparametric-project/log/cluster_$(Cluster).log
+error = /home/buhrman/nonparametric-project/err/cluster_$(Cluster)_$(Process).err
+#
+# Specify your executable (single binary or a script that runs several
+#  commands), arguments, and a files for HTCondor to store standard
+#  output (or "screen output").
+#  $(Process) will be a integer number for each job, starting with "0"
+#  and increasing for the relevant number of jobs.
+executable = /home/buhrman/nonparametric-project/sim-nonparametric.sh
+arguments = 1 $(Process)
+output = /home/buhrman/nonparametric-project/cluster_$(Cluster)_$(Process).out
+initialdir = nonparametric-project
+#
+# Specify that HTCondor should transfer files to and from the
+#  computer where each job runs. The last of these lines *would* be
+#  used if there were any other files needed for the executable to use.
+should_transfer_files = YES
+when_to_transfer_output = ON_EXIT
+transfer_input_files = http://proxy.chtc.wisc.edu/SQUID/chtc/el8/R413.tar.gz, http://proxy.chtc.wisc.edu/SQUID/buhrman/nonparametricpkgs.tar.gz, nonparametric-simulation-batch.R, nonparametric-simulation-functions.R
+#
+# Tell HTCondor what amount of compute resources
+#  each job will need on the computer where it runs.
+request_cpus = 1
+request_memory = 5GB
+request_disk = 1GB
+#
+# Tell HTCondor to run multiple instances of our job:
+queue 2
