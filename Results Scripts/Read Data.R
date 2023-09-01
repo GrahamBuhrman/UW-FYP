@@ -12,3 +12,7 @@ sim_results_dat_2 <- map_dfr(sim_results_dat_list[8001:16000], readRDS)
 gc()
 sim_results_dat_3 <- map_dfr(sim_results_dat_list[16001:24000], readRDS)
 gc()
+
+sim_results_dat <- rbind(sim_results_dat_1, sim_results_dat_2, sim_results_dat_3)
+
+saveRDS(sim_results_dat, "Simulation Data/sim_results_dat_8-10-23.rds")
