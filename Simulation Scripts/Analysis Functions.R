@@ -204,8 +204,9 @@ make_agg_CATE_plot <- function(plot_data, method_spec, color_spec){
     theme_bw() +
     theme(legend.position = "none") +
     labs(x = "Like Math",
-         y = "Conditional Average Treatment Effect",
-         title = paste(method_spec, "CATE Plot", sep = " "))
+         y = "Conditional Average Treatment Effect")
   
 }
+
+CF_plot <- make_agg_CATE_plot(plot_data = sim_plot_dat, method_spec = "CF", color_spec = "")
 
