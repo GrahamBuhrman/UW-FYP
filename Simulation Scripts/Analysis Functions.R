@@ -7,6 +7,7 @@ require(tidyr)
 require(lme4)
 require(simhelpers)
 require(ggplot2)
+require(patchwork)
 
 # Summary Statistics ------------------------------------------------------
 
@@ -27,6 +28,32 @@ get_summary_stats <- function(sim_results) {
   
 }
 
+get_PEHE_stats <- function(sim_results) {
+
+  sim_results %>%
+    dplyr::group_by(RCT, ICC, J, submit) %>%
+    dplyr::summarize(PEHE_CF = sqrt(mean((ITE - ITE_CF)^2)) / sd(Y),
+                     PEHE_stan4bart = sqrt(mean((ITE - ITE_stan4bart)^2)) / sd(Y),
+                     PEHE_BCF = sqrt(mean((ITE - ITE_BCF)^2)) / sd(Y),
+                     PEHE_MBCF = sqrt(mean((ITE - ITE_MBCF)^2)) /sd(Y),
+                     CATE_TRUE = mean(ITE),
+                     CATE_CF = mean(ITE_CF),
+                     CATE_stan4bart = mean(ITE_stan4bart),
+                     CATE_BCF = mean(ITE_BCF),
+                     CATE_MBCF = mean(ITE_MBCF)) %>%
+    dplyr::ungroup() %>% 
+    group_by(RCT, J) %>% 
+    summarize(PEHE_CF_EST = mean(PEHE_CF), 
+              PEHE_CF_MCSE = sd(PEHE_CF), 
+              PEHE_stan4bart_EST = mean(PEHE_stan4bart), 
+              PEHE_stan4bart_MCSE = sd(PEHE_stan4bart), 
+              PEHE_BCF_EST = mean(PEHE_BCF), 
+              PEHE_BCF_MCSE = sd(PEHE_BCF), 
+              PEHE_MBCF_EST = mean(PEHE_MBCF), 
+              PEHE_MBCF_MCSE = sd(PEHE_MBCF))
+  
+}
+
 # Performance Calculations ------------------------------------------------
 
 get_abs_perf <- function(sim_results) {
@@ -40,6 +67,22 @@ get_abs_perf <- function(sim_results) {
                         names_to = "Method", 
                         values_to = "Estimate") %>% 
     dplyr::group_by(Method, RCT, ICC, J) %>% 
+    do(simhelpers::calc_absolute(., estimates = Estimate, true_param = CATE_TRUE)) %>%
+    dplyr::ungroup()
+  
+}
+
+get_abs_perf_agg <- function(sim_results) {
+  
+  summary_stats <- get_summary_stats(sim_results)
+  
+  res_dat <- 
+    summary_stats %>%
+    tidyr::pivot_longer(cols = c(CATE_CF, CATE_stan4bart, CATE_BCF, CATE_MBCF), 
+                        names_prefix = "CATE_", 
+                        names_to = "Method", 
+                        values_to = "Estimate") %>% 
+    dplyr::group_by(Method, RCT, J) %>% 
     do(simhelpers::calc_absolute(., estimates = Estimate, true_param = CATE_TRUE)) %>%
     dplyr::ungroup()
   
@@ -161,6 +204,8 @@ make_perf_plot <- function(perf_data, grid_spec_1, grid_spec_2, x_axis_spec, per
   
 }
 
+
+
 make_agg_CATE_plot <- function(plot_data, method_spec, color_spec){
   
   # define piecewise functions
@@ -190,9 +235,9 @@ make_agg_CATE_plot <- function(plot_data, method_spec, color_spec){
          aes(x = LIKEMATH)) +
     ylim(0, 2.25) +
     xlim(5, 14) +
-    stat_function(fun = fun1, n = 5001, linewidth = 1, linetype = "dashed", color = "black") +
-    stat_function(fun = fun2, n = 5001, linewidth = 1, linetype = "dashed", color = "black") +
-    stat_function(fun = fun3, n = 5001, linewidth = 1, linetype = "dashed", color = "black") +
+    stat_function(fun = fun1, n = 5001, linewidth = 1.5, linetype = "dashed", color = "black") +
+    stat_function(fun = fun2, n = 5001, linewidth = 1.5, linetype = "dashed", color = "black") +
+    stat_function(fun = fun3, n = 5001, linewidth = 1.5, linetype = "dashed", color = "black") +
     geom_ribbon(aes(ymin = predict(mgcv::gam(lbITE ~ s(LIKEMATH, bs = "cs"))), 
                     ymax = predict(mgcv::gam(ubITE ~ s(LIKEMATH, bs = "cs")))),
                 alpha = 0.25,
@@ -200,13 +245,56 @@ make_agg_CATE_plot <- function(plot_data, method_spec, color_spec){
                 color = color_spec,
                 linewidth = 1,
                 linetype = "dotdash") + 
-    geom_smooth(aes(y = estITE), color = color_spec, linewidth = 1, method = "gam", se = FALSE) +
+    geom_smooth(aes(y = estITE), color = color_spec, linewidth = 1.5, method = "gam", se = FALSE) +
     theme_bw() +
-    theme(legend.position = "none") +
-    labs(x = "Like Math",
-         y = "Conditional Average Treatment Effect")
+    theme(legend.position = "none",
+          axis.text = element_text(size = 30, family = "Red Hat Display", color = "black"),
+          axis.title = element_blank())
   
 }
 
-CF_plot <- make_agg_CATE_plot(plot_data = sim_plot_dat, method_spec = "CF", color_spec = "")
+CF_plot <- make_agg_CATE_plot(plot_data = sim_plot_dat, method_spec = "CF", color_spec = "#0479a8")
+BCF_plot <- make_agg_CATE_plot(plot_data = sim_plot_dat, method_spec = "BCF", color_spec = "#f7941e")
+MBCF_plot <- make_agg_CATE_plot(plot_data = sim_plot_dat, method_spec = "MBCF", color_spec = "#97b85f")
+stan4bart_plot <- make_agg_CATE_plot(plot_data = sim_plot_dat, method_spec = "stan4bart", color_spec = "#c5050c")
 
+# get different plots
+png(filename="CF_plot.png", 
+    type="cairo",
+    units="in", 
+    width=16, 
+    height=12, 
+    pointsize=12, 
+    res=300)
+make_agg_CATE_plot(plot_data = sim_plot_dat, method_spec = "CF", color_spec = "#0479a8")
+dev.off()
+
+png(filename="BCF_plot.png", 
+    type="cairo",
+    units="in", 
+    width=16, 
+    height=12, 
+    pointsize=12, 
+    res=300)
+make_agg_CATE_plot(plot_data = sim_plot_dat, method_spec = "BCF", color_spec = "#f7941e")
+dev.off()
+
+png(filename="MBCF_plot.png", 
+    type="cairo",
+    units="in", 
+    width=16, 
+    height=12, 
+    pointsize=12, 
+    res=300)
+make_agg_CATE_plot(plot_data = sim_plot_dat, method_spec = "MBCF", color_spec = "#97b85f")
+dev.off()
+
+png(filename="stan4bart_plot.png", 
+    type="cairo",
+    units="in", 
+    width=16, 
+    height=12, 
+    pointsize=12, 
+    res=300)
+make_agg_CATE_plot(plot_data = sim_plot_dat, method_spec = "stan4bart", color_spec = "#c5050c")
+dev.off()
