@@ -3,7 +3,7 @@
 require(dplyr)
 require(purrr)
 
-sim_results_dat_list <- list.files(path = "C:/Users/gwbuh/Desktop/Non-parametric Condor Results/Sim Results 8-10-23", pattern = ".rds", full.names = TRUE) 
+sim_results_dat_list <- list.files(path = "C:/Users/gwbuh/Desktop/Non-parametric Condor Results/Sim Results 9-7-23", pattern = ".rds", full.names = TRUE) 
 
 
 sim_results_dat_1 <- map_dfr(sim_results_dat_list[1:8000], readRDS)
@@ -15,4 +15,4 @@ gc()
 
 sim_results_dat <- rbind(sim_results_dat_1, sim_results_dat_2, sim_results_dat_3)
 
-saveRDS(sim_results_dat, "Simulation Data/sim_results_dat_8-10-23.rds")
+saveRDS(sim_results_dat, "Raw Sim Data/sim_results_dat_9-7-23.rds")
