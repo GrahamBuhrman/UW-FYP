@@ -7,7 +7,6 @@ require(tidyr)
 require(lme4)
 require(simhelpers)
 require(ggplot2)
-require(patchwork)
 
 # Summary Statistics ------------------------------------------------------
 
@@ -15,11 +14,7 @@ get_summary_stats <- function(sim_results) {
   
   sim_results %>%
     dplyr::group_by(RCT, ICC, J, submit) %>%
-    dplyr::summarize(PEHE_CF = sqrt(mean((ITE - ITE_CF)^2)) / sd(Y),
-                     PEHE_stan4bart = sqrt(mean((ITE - ITE_stan4bart)^2)) / sd(Y),
-                     PEHE_BCF = sqrt(mean((ITE - ITE_BCF)^2)) / sd(Y),
-                     PEHE_MBCF = sqrt(mean((ITE - ITE_MBCF)^2)) /sd(Y),
-                     CATE_TRUE = mean(ITE),
+    dplyr::summarize(CATE_TRUE = mean(ITE),
                      CATE_CF = mean(ITE_CF),
                      CATE_stan4bart = mean(ITE_stan4bart),
                      CATE_BCF = mean(ITE_BCF),
@@ -31,26 +26,21 @@ get_summary_stats <- function(sim_results) {
 get_PEHE_stats <- function(sim_results) {
 
   sim_results %>%
-    dplyr::group_by(RCT, ICC, J, submit) %>%
-    dplyr::summarize(PEHE_CF = sqrt(mean((ITE - ITE_CF)^2)) / sd(Y),
-                     PEHE_stan4bart = sqrt(mean((ITE - ITE_stan4bart)^2)) / sd(Y),
-                     PEHE_BCF = sqrt(mean((ITE - ITE_BCF)^2)) / sd(Y),
-                     PEHE_MBCF = sqrt(mean((ITE - ITE_MBCF)^2)) /sd(Y),
-                     CATE_TRUE = mean(ITE),
-                     CATE_CF = mean(ITE_CF),
-                     CATE_stan4bart = mean(ITE_stan4bart),
-                     CATE_BCF = mean(ITE_BCF),
-                     CATE_MBCF = mean(ITE_MBCF)) %>%
+    dplyr::group_by(RCT, J, submit) %>%
+    dplyr::summarize(PEHE_CF = sqrt(mean((ITE - ITE_CF)^2)),
+                     PEHE_stan4bart = sqrt(mean((ITE - ITE_stan4bart)^2)),
+                     PEHE_BCF = sqrt(mean((ITE - ITE_BCF)^2)),
+                     PEHE_MBCF = sqrt(mean((ITE - ITE_MBCF)^2))) %>%
     dplyr::ungroup() %>% 
     group_by(RCT, J) %>% 
     summarize(PEHE_CF_EST = mean(PEHE_CF), 
-              PEHE_CF_MCSE = sd(PEHE_CF), 
+              PEHE_CF_SD = sd(PEHE_CF), 
               PEHE_stan4bart_EST = mean(PEHE_stan4bart), 
-              PEHE_stan4bart_MCSE = sd(PEHE_stan4bart), 
+              PEHE_stan4bart_SD = sd(PEHE_stan4bart), 
               PEHE_BCF_EST = mean(PEHE_BCF), 
-              PEHE_BCF_MCSE = sd(PEHE_BCF), 
+              PEHE_BCF_SD = sd(PEHE_BCF), 
               PEHE_MBCF_EST = mean(PEHE_MBCF), 
-              PEHE_MBCF_MCSE = sd(PEHE_MBCF))
+              PEHE_MBCF_SD = sd(PEHE_MBCF))
   
 }
 
@@ -235,17 +225,17 @@ make_agg_CATE_plot <- function(plot_data, method_spec, color_spec){
          aes(x = LIKEMATH)) +
     ylim(0, 2.25) +
     xlim(5, 14) +
-    stat_function(fun = fun1, n = 5001, linewidth = 1.5, linetype = "dashed", color = "black") +
-    stat_function(fun = fun2, n = 5001, linewidth = 1.5, linetype = "dashed", color = "black") +
-    stat_function(fun = fun3, n = 5001, linewidth = 1.5, linetype = "dashed", color = "black") +
+    stat_function(fun = fun1, n = 5001, linewidth = 2, linetype = "dashed", color = "black") +
+    stat_function(fun = fun2, n = 5001, linewidth = 2, linetype = "dashed", color = "black") +
+    stat_function(fun = fun3, n = 5001, linewidth = 2, linetype = "dashed", color = "black") +
     geom_ribbon(aes(ymin = predict(mgcv::gam(lbITE ~ s(LIKEMATH, bs = "cs"))), 
                     ymax = predict(mgcv::gam(ubITE ~ s(LIKEMATH, bs = "cs")))),
                 alpha = 0.25,
                 fill = color_spec,
                 color = color_spec,
-                linewidth = 1,
+                linewidth = 2,
                 linetype = "dotdash") + 
-    geom_smooth(aes(y = estITE), color = color_spec, linewidth = 1.5, method = "gam", se = FALSE) +
+    geom_smooth(aes(y = estITE), color = color_spec, linewidth = 2, method = "gam", se = FALSE) +
     theme_bw() +
     theme(legend.position = "none",
           axis.text = element_text(size = 30, family = "Red Hat Display", color = "black"),
@@ -253,10 +243,6 @@ make_agg_CATE_plot <- function(plot_data, method_spec, color_spec){
   
 }
 
-CF_plot <- make_agg_CATE_plot(plot_data = sim_plot_dat, method_spec = "CF", color_spec = "#0479a8")
-BCF_plot <- make_agg_CATE_plot(plot_data = sim_plot_dat, method_spec = "BCF", color_spec = "#f7941e")
-MBCF_plot <- make_agg_CATE_plot(plot_data = sim_plot_dat, method_spec = "MBCF", color_spec = "#97b85f")
-stan4bart_plot <- make_agg_CATE_plot(plot_data = sim_plot_dat, method_spec = "stan4bart", color_spec = "#c5050c")
 
 # get different plots
 png(filename="CF_plot.png", 
