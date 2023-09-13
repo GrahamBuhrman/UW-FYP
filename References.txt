@@ -1,0 +1,15 @@
+Athey, S., & Wager, S. (2019). Estimating Treatment Effects with Causal Forests: An Application. Observational Studies, 5(2), 37–51. https://doi.org/10.1353/obs.2019.0001
+
+Chipman, H. A., George, E. I., & McCulloch, R. E. (2010). BART: Bayesian additive regression trees. The Annals of Applied Statistics, 4(1), 266–298. https://doi.org/10.1214/09-AOAS285
+
+Dorie, V., Perrett, G., Hill, J. L., & Goodrich, B. (2022). Stan and BART for Causal Inference: Estimating Heterogeneous Treatment Effects Using the Power of Stan and the Flexibility of Machine Learning. Entropy, 24(12), Article 12. https://doi.org/10.3390/e24121782
+
+Hahn, P. R., Murray, J. S., & Carvalho, C. M. (2020). Bayesian Regression Tree Models for Causal Inference: Regularization, Confounding, and Heterogeneous Effects (with Discussion). Bayesian Analysis, 15(3). https://doi.org/10.1214/19-BA1195
+
+Hill, J. L. (2011). Bayesian Nonparametric Modeling for Causal Inference. Journal of Computational and Graphical Statistics, 20(1), 217–240. https://doi.org/10.1198/jcgs.2010.08162
+
+Hu, A. (2023). Heterogeneous treatment effects analysis for social scientists: A review. Social Science Research, 109, 102810. https://doi.org/10.1016/j.ssresearch.2022.102810
+
+Kim, J.-S., Liao, X., & Loh, W. W. (2023). Comparing Parametric and Nonparametric Methods for Heterogeneous Treatment Effects. In M. Wiberg, D. Molenaar, J. González, J.-S. Kim, & H. Hwang (Eds.), Quantitative Psychology (pp. 31–39). Springer Nature Switzerland. https://doi.org/10.1007/978-3-031-27781-8_3
+
+Yeager, D. S., Bryan, C. J., Gross, J. J., Murray, J. S., Krettek Cobb, D., H. F. Santos, P., Gravelding, H., Johnson, M., & Jamieson, J. P. (2022). A synergistic mindsets intervention protects adolescents from stress. Nature, 607(7919), Article 7919. https://doi.org/10.1038/s41586-022-04907-7
