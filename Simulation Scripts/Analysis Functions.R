@@ -108,7 +108,7 @@ get_agg_results_plot <- function(sim_results) {
                      lbITE = quantile(sampleITE, 0.025),
                      ubITE = quantile(sampleITE, 0.975)) %>%
     dplyr::ungroup() %>%
-    dplyr::select(IDSTU, J, method, estITE, lbITE, ubITE)
+    dplyr::select(IDSTU, RCT, J, method, estITE, lbITE, ubITE)
   
 }
 
@@ -120,9 +120,13 @@ get_plot_dat <- function(sim_results) {
   cov_dat <- readRDS("Simulation Data/TIMSS_covariates.rds")
   agg_results <- get_agg_results_plot(sim_results)
   
+  gc()
+  
   plot_dat <-
     dplyr::left_join(agg_results, cov_dat, by = "IDSTU") %>%
-    dplyr::select(IDSCH, IDSTU, J, method, LIKEMATH, estITE, lbITE, ubITE)
+    dplyr::select(IDSCH, IDSTU, RCT, J, method, LIKEMATH, estITE, lbITE, ubITE)
+  
+  gc()
   
   return(plot_dat)
 
@@ -130,56 +134,6 @@ get_plot_dat <- function(sim_results) {
 
 
 # Visualize Data ----------------------------------------------------------
-
-make_CATE_plot <- function(plot_data, method_spec, color_spec) {
-  
-  # define piecewise functions
-  fun1 <- function(x) {
-    
-    (ifelse(x >= 0 & x < 9, (1.50/9) * x, NA)) + 0.5
-    
-  }
-  
-  fun2 <- function(x) {
-    
-    (ifelse(x >= 9 & x < 12, 1.50, NA)) + 0.5
-    
-  }
-  
-  fun3 <- function(x) {
-    
-    ifelse(x >= 12 & x < 14, (7 * 1.50) - ((1.50 / 2) * x), NA) + 0.5
-    
-  }
-  
-  plot_data_filter <- 
-    plot_data %>%
-    dplyr::filter(., method == method_spec)
-
-  # get plot
-  ggplot(data = plot_data_filter,
-         aes(x = LIKEMATH)) +
-    ylim(0, 2.25) +
-    xlim(5, 14) +
-    stat_function(fun = fun1, n = 5001, linewidth = 1, linetype = "dashed", color = "black") +
-    stat_function(fun = fun2, n = 5001, linewidth = 1, linetype = "dashed", color = "black") +
-    stat_function(fun = fun3, n = 5001, linewidth = 1, linetype = "dashed", color = "black") +
-    geom_ribbon(aes(ymin = predict(mgcv::gam(lbITE ~ s(LIKEMATH, bs = "cs"))), 
-                    ymax = predict(mgcv::gam(ubITE ~ s(LIKEMATH, bs = "cs")))),
-                alpha = 0.25,
-                fill = color_spec,
-                color = color_spec,
-                linewidth = 1,
-                linetype = "dotdash") + 
-    geom_smooth(aes(y = estITE), linewidth = 1, color = color_spec, method = "gam", se = FALSE) +
-    theme_bw() +
-    theme(legend.position = "none") +
-    labs(x = "Like Math",
-         y = "Conditional Average Treatment Effect",
-         title = paste(method_spec, "CATE Plot", sep = " ")) +
-    facet_wrap(vars(J), nrow = 2)
-  
-}
 
 make_perf_plot <- function(perf_data, grid_spec_1, grid_spec_2, x_axis_spec, perf_spec) {
   
@@ -193,8 +147,6 @@ make_perf_plot <- function(perf_data, grid_spec_1, grid_spec_2, x_axis_spec, per
     facet_grid(cols = vars(grid_spec_1), rows = vars(grid_spec_2))
   
 }
-
-
 
 make_agg_CATE_plot <- function(plot_data, method_spec, color_spec){
   
@@ -219,15 +171,15 @@ make_agg_CATE_plot <- function(plot_data, method_spec, color_spec){
   
   plot_data_filter <- 
     plot_data %>%
-    dplyr::filter(., J == 200, method == method_spec)
+    dplyr::filter(., J == 200, RCT == FALSE, method == method_spec)
   
   ggplot(data = plot_data_filter,
          aes(x = LIKEMATH)) +
     ylim(0, 2.25) +
     xlim(5, 14) +
-    stat_function(fun = fun1, n = 5001, linewidth = 2, linetype = "dashed", color = "black") +
-    stat_function(fun = fun2, n = 5001, linewidth = 2, linetype = "dashed", color = "black") +
-    stat_function(fun = fun3, n = 5001, linewidth = 2, linetype = "dashed", color = "black") +
+    stat_function(fun = fun1, n = 5001, linewidth = 4, linetype = "solid", color = "black") +
+    stat_function(fun = fun2, n = 5001, linewidth = 4, linetype = "solid", color = "black") +
+    stat_function(fun = fun3, n = 5001, linewidth = 4, linetype = "solid", color = "black") +
     geom_ribbon(aes(ymin = predict(mgcv::gam(lbITE ~ s(LIKEMATH, bs = "cs"))), 
                     ymax = predict(mgcv::gam(ubITE ~ s(LIKEMATH, bs = "cs")))),
                 alpha = 0.25,
@@ -245,7 +197,7 @@ make_agg_CATE_plot <- function(plot_data, method_spec, color_spec){
 
 
 # get different plots
-png(filename="CF_plot.png", 
+png(filename="CF_plot_rev.png", 
     type="cairo",
     units="in", 
     width=16, 
@@ -255,7 +207,7 @@ png(filename="CF_plot.png",
 make_agg_CATE_plot(plot_data = sim_plot_dat, method_spec = "CF", color_spec = "#0479a8")
 dev.off()
 
-png(filename="BCF_plot.png", 
+png(filename="BCF_plot_rev.png", 
     type="cairo",
     units="in", 
     width=16, 
@@ -265,7 +217,7 @@ png(filename="BCF_plot.png",
 make_agg_CATE_plot(plot_data = sim_plot_dat, method_spec = "BCF", color_spec = "#f7941e")
 dev.off()
 
-png(filename="MBCF_plot.png", 
+png(filename="MBCF_plot_rev.png", 
     type="cairo",
     units="in", 
     width=16, 
@@ -275,7 +227,7 @@ png(filename="MBCF_plot.png",
 make_agg_CATE_plot(plot_data = sim_plot_dat, method_spec = "MBCF", color_spec = "#97b85f")
 dev.off()
 
-png(filename="stan4bart_plot.png", 
+png(filename="stan4bart_plot_rev.png", 
     type="cairo",
     units="in", 
     width=16, 
