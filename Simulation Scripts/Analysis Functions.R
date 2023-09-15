@@ -103,7 +103,7 @@ get_agg_results_plot <- function(sim_results) {
                         names_prefix = "ITE_",
                         names_to = "method",
                         values_to = "sampleITE") %>%
-    dplyr::group_by(J, method, IDSTU) %>%
+    dplyr::group_by(RCT, J, method, IDSTU) %>%
     dplyr::summarize(estITE = mean(sampleITE),
                      lbITE = quantile(sampleITE, 0.025),
                      ubITE = quantile(sampleITE, 0.975)) %>%
@@ -177,9 +177,9 @@ make_agg_CATE_plot <- function(plot_data, method_spec, color_spec){
          aes(x = LIKEMATH)) +
     ylim(0, 2.25) +
     xlim(5, 14) +
-    stat_function(fun = fun1, n = 5001, linewidth = 4, linetype = "solid", color = "black") +
-    stat_function(fun = fun2, n = 5001, linewidth = 4, linetype = "solid", color = "black") +
-    stat_function(fun = fun3, n = 5001, linewidth = 4, linetype = "solid", color = "black") +
+    stat_function(fun = fun1, n = 5001, linewidth = 3, linetype = "solid", color = "black") +
+    stat_function(fun = fun2, n = 5001, linewidth = 3, linetype = "solid", color = "black") +
+    stat_function(fun = fun3, n = 5001, linewidth = 3, linetype = "solid", color = "black") +
     geom_ribbon(aes(ymin = predict(mgcv::gam(lbITE ~ s(LIKEMATH, bs = "cs"))), 
                     ymax = predict(mgcv::gam(ubITE ~ s(LIKEMATH, bs = "cs")))),
                 alpha = 0.25,
@@ -190,14 +190,14 @@ make_agg_CATE_plot <- function(plot_data, method_spec, color_spec){
     geom_smooth(aes(y = estITE), color = color_spec, linewidth = 2, method = "gam", se = FALSE) +
     theme_bw() +
     theme(legend.position = "none",
-          axis.text = element_text(size = 30, family = "Red Hat Display", color = "black"),
+          axis.text = element_text(size = 30, family = "Verdana", color = "black"),
           axis.title = element_blank())
   
 }
 
 
 # get different plots
-png(filename="CF_plot_rev.png", 
+png(filename="Images/CF_plot_black_3.png", 
     type="cairo",
     units="in", 
     width=16, 
@@ -207,7 +207,7 @@ png(filename="CF_plot_rev.png",
 make_agg_CATE_plot(plot_data = sim_plot_dat, method_spec = "CF", color_spec = "#0479a8")
 dev.off()
 
-png(filename="BCF_plot_rev.png", 
+png(filename="Images/BCF_plot_black_3.png", 
     type="cairo",
     units="in", 
     width=16, 
@@ -217,7 +217,7 @@ png(filename="BCF_plot_rev.png",
 make_agg_CATE_plot(plot_data = sim_plot_dat, method_spec = "BCF", color_spec = "#f7941e")
 dev.off()
 
-png(filename="MBCF_plot_rev.png", 
+png(filename="Images/MBCF_plot_black_3.png", 
     type="cairo",
     units="in", 
     width=16, 
@@ -227,7 +227,7 @@ png(filename="MBCF_plot_rev.png",
 make_agg_CATE_plot(plot_data = sim_plot_dat, method_spec = "MBCF", color_spec = "#97b85f")
 dev.off()
 
-png(filename="stan4bart_plot_rev.png", 
+png(filename="Images/stan4bart_plot_black_3.png", 
     type="cairo",
     units="in", 
     width=16, 
