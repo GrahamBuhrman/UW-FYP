@@ -117,16 +117,19 @@ make_PEHE_boxplot <- function(sim_results) {
          aes(x = method,
              y = PEHE,
              fill = method)) +
-    geom_boxplot(alpha = 0.5, size = 0.75) +
+    geom_boxplot(alpha = 0.5, size = 1) +
     geom_hline(yintercept = 0.2, linetype = "dashed", linewidth = 1) +
     scale_fill_manual(values=c("#0479a8", "#c5050c", "#f7941e","#97b85f")) +
     facet_grid(ICC~Clusters, labeller = labeller(ICC = label_both, Clusters = label_both)) +
-    theme_bw() +
+    theme_bw() + 
     labs(x = "Method",
          y = "RPEHE",
          fill = "Method") +
-    theme(text = element_text(size = 25, color = "black", face = "plain"),
-          legend.position = "none")
+    theme(text = element_text(size = 40, color = "black", face = "plain"),
+          axis.text.x = element_blank(),
+          axis.title.x = element_blank(),
+          legend.text = element_text(size = 40),
+          legend.title = element_text(size = 45))
   
 }
 
@@ -172,7 +175,7 @@ make_agg_CATE_plot <- function(plot_data, method_spec, color_spec){
                 linetype = "dotdash") + 
     geom_smooth(aes(y = estITE), color = color_spec, linewidth = 1.5, method = "gam", se = FALSE) +
     theme_bw() +
-    theme(text = element_text(size = 15, color = "black"),
+    theme(text = element_text(size = 40, color = "black"),
           legend.position = "top",
           axis.title = element_blank()) +
     labs(fill = "Method")
@@ -189,10 +192,10 @@ arrange_CATE_plots <- function(plot_1, plot_2, plot_3, plot_4) {
                       vjust = -5,
                       align = "hv",
                       legend = "top",
-                      font.label = list(size = 15, face = "plain"))
+                      font.label = list(size = 40, face = "plain"))
   
   annotate_figure(figure, left = ggpubr::text_grob("CATE", rot = 90, size = 30),
-                  bottom = ggpubr::text_grob("Like Math", size = 30))
+                  bottom = ggpubr::text_grob("Like Math", size = 40))
   
 }
   
@@ -203,6 +206,13 @@ test_CF_plot <- make_agg_CATE_plot(plot_data = sim_plot_dat, method_spec = "CF",
 test_stan4bart_plot <- make_agg_CATE_plot(plot_data = sim_plot_dat, method_spec = "stan4bart", color_spec = "#c5050c")
 test_BCF_plot <- make_agg_CATE_plot(plot_data = sim_plot_dat, method_spec = "BCF", color_spec = "#f7941e")
 test_MBCF_plot <- make_agg_CATE_plot(plot_data = sim_plot_dat, method_spec = "MBCF", color_spec = "#97b85f")
+
+CATE_arrange_plot <- arrange_CATE_plots(test_CF_plot, test_stan4bart_plot, test_BCF_plot, test_MBCF_plot)
+PEHE_boxplot <- make_PEHE_boxplot(sim_results_dat)
+
+ggplot2::ggsave("Images/PEHE_plots.svg", plot = PEHE_boxplot, width = 25, height = 20, units = "in", dpi = 300)
+ggplot2::ggsave("Images/CATE_plots.svg", plot = CATE_arrange_plot, width = 25, height = 20, units = "in", dpi = 300)
+
 
 png(filename="Images/CATE_plots.png",
     type="cairo",

@@ -52,3 +52,5 @@ Simulation Data/sim_results_8-9-23.rds
 Simulation Data/sim_results_dat_8-1-23.rds
 *.rds
 Raw Sim Data
+Images/CATE_plots.tiff
+*.tiff
